@@ -13,7 +13,8 @@
 #define INTERACTIVE_ON_ERROR   2
 #define INTERACTIVE            3
 
-#define RENAME_ON_REBOOT (EXIT_FAILURE+1)
+/* Check for exit code > 100 to see if a RENAME_ON_REBOOT occurred. */
+#define RENAME_ON_REBOOT 110
 
 char *program_name;
 
