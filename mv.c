@@ -57,7 +57,12 @@ char *program_name;
 int do_move(const char *src, const char *dst, int interactive) {
 	char *built_dst = NULL;
 	int err = 0;
-	#if defined(__unix__) || defined(_WIN32)
+	#if defined(_WIN32) || defined(__unix__)
+		built_dst = build_dst(src, dst);
+		if(!built_dst) {
+			perror("do_move call to build_dst failed");
+			exit(EXIT_FAILURE);
+		}
 		/* POSIX says the default depends on if stdin isatty. */
 		if(interactive == INTERACTIVE_ON_ERROR && !isatty(fileno(stdin))) {
 			interactive = INTERACTIVE_ASSUME_YES;
@@ -66,31 +71,26 @@ int do_move(const char *src, const char *dst, int interactive) {
 	/* If running in interactive mode, prompt for overwrite. */
 	if(interactive > INTERACTIVE_ASSUME_YES) {
 	#if defined(_WIN32) || defined(__unix__)
-		built_dst = build_dst(src, dst);
-		if(!built_dst) {
-			perror("do_move call to build_dst failed");
-			exit(EXIT_FAILURE);
-		}
 		if(file_exists(built_dst)) {
-			char yesno[3];
+			int yesno;
 			fprintf(stderr, "'%s' already exists. Overwrite? [Yn] ", built_dst);
-			if(!fgets(yesno, 2, stdin)) {
+			if((yesno = fgetc(stdin)) == EOF) {
 				fputs("Reading from STDIN failed.\n", stderr);
 				return EXIT_FAILURE;
 			}
-			if(yesno[0] == 'n' || yesno[0] == 'N') {
+			if(yesno == 'n' || yesno == 'N') {
 				return 0;
 			}
 		}
 	#else
 		/* C89 gives us no way to construct the path, so just always prompt. */
-		char yesno[3];
+		char yesno;
 		fprintf(stderr, "Can't tell if '%s' exists. Move anyway? [Yn] ", dst);
-		if(!fgets(yesno, 2, stdin)) {
+		if((yesno = fgets(stdin)) == EOF) {
 			fputs("Reading from STDIN failed.\n", stderr);
 			return EXIT_FAILURE;
 		}
-		if(yesno[0] == 'n' || yesno[0] == 'N') {
+		if(yesno == 'n' || yesno == 'N') {
 			return 0;
 		}
 	#endif
