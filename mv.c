@@ -2,13 +2,20 @@
 #include <stdlib.h>
 #include <unistd.h> /* for getopt TODO: freegetopt */
 
-#define INTERACTIVE_ON_ERROR   1 /* POSIX says if "the standard input is a terminal"... no way to check that portably */
-#define INTERACTIVE            2
-#define INTERACTIVE_ASSUME_YES 3
+#define INTERACTIVE_ASSUME_YES 1
+#define INTERACTIVE_ON_ERROR   2 /* POSIX says if "the standard input is a terminal"... no way to check that portably */
+#define INTERACTIVE            3
+
+#define RENAME_ON_REBOOT 10
 
 char *program_name;
 
 int do_move(const char *src, const char *dst, int interactive) {
+	/* if(interactive > INTERACTIVE_ASSUME_YES && dst exists) prompt for overwrite, return 0 on no */
+	/* Try to move */
+	/* if(interactive > INERACTIVE_ASSUME_YES && dst is in use) prompt for rename-at-reboot return EXIT_FAILURE on no, RENAME_ON_REBOOT on yes. XXX: Not in POSIX */
+	/* if interactive == INTERACTIVE_ASSUME_YES && dst is in use) rename-at reboot. return RENAME_ON_REBOOT. XXX: Not in POSIX */
+	/* if(any other error) print errmsg. return EXIT_FAILURE */
 	return 0;
 }
 
