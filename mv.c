@@ -13,7 +13,6 @@
 #define INTERACTIVE_ON_ERROR   2
 #define INTERACTIVE            3
 
-/* Check for exit code > 100 to see if a RENAME_ON_REBOOT occurred. */
 #define RENAME_ON_REBOOT 110
 
 char *program_name;
@@ -149,7 +148,9 @@ int main(int argc, char *argv[]) {
 		err = do_move(argv[i], argv[argc-1], interactive);
 		if(err) {
 			fprintf(stderr, "%s: move of '%s' to '%s' failed.\n", program_name, argv[i], argv[argc-1]);
-			exit_status |= err;
+			if(exit_status != RENAME_ON_REBOOT) {
+				exit_status = err;
+			}
 		}
 	}
 
