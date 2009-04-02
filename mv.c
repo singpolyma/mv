@@ -2,7 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <unistd.h> /* for getopt TODO: freegetopt */
+
+#if defined(__unix__)
+	#include <unistd.h> /* for getopt TODO: freegetopt */
+#else
+	#include "getopt.h"
+#endif
 
 #define INTERACTIVE_ASSUME_YES 1
 #define INTERACTIVE_ON_ERROR   2
