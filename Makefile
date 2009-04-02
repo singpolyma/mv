@@ -1,4 +1,4 @@
-CFLAGS=-ansi -pedantic -Wall -Wextra -D_XOPEN_SOURCE -O3
+CFLAGS=-ansi -pedantic -Wall -Wextra -D_XOPEN_SOURCE -D_BSD_SOURCE -O3
 mv: mv.o
 
 .PHONY: clean
