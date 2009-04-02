@@ -52,7 +52,7 @@ char *program_name;
 int do_move(const char *src, const char *dst, int interactive) {
 	char *built_dst = NULL;
 	int err = 0;
-	/* If renning in interactive mode, prompt for overwrite. */
+	/* If running in interactive mode, prompt for overwrite. */
 	if(interactive > INTERACTIVE_ASSUME_YES) {
 	#if defined(_WIN32) || defined(__unix__)
 		built_dst = build_dst(src, dst);
