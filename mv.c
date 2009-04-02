@@ -45,13 +45,12 @@ char *program_name;
 	}
 	int file_exists(const char *dst) {
 		FILE *fp;
-		int exists = 0;
 		fp = fopen(dst, "rb");
 		if(fp) { /* The file exists */
-			exists = 1;
 			fclose(fp);
+			return 1;
 		}
-		return exists;
+		return 0;
 	}
 #endif
 
