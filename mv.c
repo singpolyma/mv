@@ -5,7 +5,7 @@
 #include <unistd.h> /* for getopt TODO: freegetopt */
 
 #define INTERACTIVE_ASSUME_YES 1
-#define INTERACTIVE_ON_ERROR   2 /* POSIX says if "the standard input is a terminal"... no way to check that portably */
+#define INTERACTIVE_ON_ERROR   2
 #define INTERACTIVE            3
 
 #define RENAME_ON_REBOOT (EXIT_FAILURE+1)
@@ -52,6 +52,12 @@ char *program_name;
 int do_move(const char *src, const char *dst, int interactive) {
 	char *built_dst = NULL;
 	int err = 0;
+	#if defined(__unix__)
+		/* POSIX says the default depends on if stdin isatty. */
+		if(interactive == INTERACTIVE_ON_ERROR && !isatty(stdin)) {
+			interactive = INTERACTIVE_ASSUME_YES;
+		}
+	#endif
 	/* If running in interactive mode, prompt for overwrite. */
 	if(interactive > INTERACTIVE_ASSUME_YES) {
 	#if defined(_WIN32) || defined(__unix__)
