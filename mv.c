@@ -201,11 +201,17 @@ int main(int argc, char *argv[]) {
 	for(i = 0; i < argc-1; i++) {
 		err = do_move(argv[i], argv[argc-1], interactive);
 		if(err) {
-			fprintf(stderr, "%s: move of '%s' to '%s' failed.\n", program_name, argv[i], argv[argc-1]);
+			if(err != RENAME_ON_REBOOT) {
+				fprintf(stderr, "%s: move of '%s' to '%s' failed.\n", program_name, argv[i], argv[argc-1]);
+			}
 			if(exit_status != RENAME_ON_REBOOT) {
 				exit_status = err;
 			}
 		}
+	}
+
+	if(exit_status == RENAME_ON_REBOOT) {
+		fputs("Some files will not be renamed until you reboot.\n", stderr);
 	}
 
 	exit(exit_status);
