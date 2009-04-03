@@ -15,12 +15,39 @@
 
 #define RENAME_ON_REBOOT 110
 
-char *program_name;
-
 #if defined(_WIN32)
-	/* TODO */
-#elif defined(__unix__)
+	#include <io.h>
+	#define TRY_BACKSLASH_AND_SLASH(p) \
+	       	name = strrchr((p), '\\'); \
+		if(!name) { \
+			name = strrchr((p), '/'); \
+		} \
+		if(!name) { \
+			return (p); \
+		}
+	char *basename(char *path) {
+		char *name;
+		if(path == NULL || path[0] == '\0') {
+			return ".";
+		}
+		if(strlen(path) == 1 && (path[0] == '\\' || path[0] == '/')) {
+			return "/";
+		}
+		TRY_BACKSLASH_AND_SLASH(path);
+		if(name[1] == '\0') {
+			*name = '\0';
+			TRY_BACKSLASH_AND_SLASH(path);
+		}
+		if(name[1] == '\0') {
+			return "/";
+		}
+		return name+1;
+	}
+#endif
+#if defined(__unix__)
 	#include <libgen.h>
+#endif
+#if defined(_WIN32) || defined(__unix__)
 	#include <sys/stat.h>
 	int isdir(const char *path) {
 		struct stat st;
@@ -28,8 +55,9 @@ char *program_name;
 	}
 	char *build_dst(const char *src, const char *dst) {
 		if(isdir(dst)) {
+			char *src_copy = strdup(src);
 			char *path = strdup(dst);
-			char *file = basename((char*)src);
+			char *file = basename(src_copy);
 			if(!path || !file) return NULL;
 			path = realloc(path, strlen(path) + strlen(file) + 2);
 			if(!path) return NULL;
@@ -37,6 +65,7 @@ char *program_name;
 				strcat(path, "/");
 			}
 			strcat(path, file);
+			free(src_copy);
 			return path;
 		} else {
 			return strdup(dst);
