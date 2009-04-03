@@ -146,7 +146,7 @@ int do_move(const char *src, const char *dst, int interactive) {
 	return err;
 }
 
-void help(void) {
+void help(char *program_name) {
 	fprintf(stderr, "%s [-i | -f] source_file(s) target_file\n", program_name);
 	exit(EXIT_FAILURE);
 }
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 	int i, err;
 	int exit_status = EXIT_SUCCESS;
 	int interactive = INTERACTIVE_ON_ERROR;
-	program_name = argv[0];
+	char *program_name = argv[0];
 
 	while((i = getopt(argc, argv, "if")) != -1) {
 		switch(i) {
@@ -166,13 +166,13 @@ int main(int argc, char *argv[]) {
 				interactive = INTERACTIVE_ASSUME_YES;
 				break;
 			default:
-				help();
+				help(program_name);
 		}
 	}
 	argc -= optind;
 	argv += optind;
 	if(argc < 2) {
-		help();
+		help(program_name);
 	}
 
 	for(i = 0; i < argc-1; i++) {
