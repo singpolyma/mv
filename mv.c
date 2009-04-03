@@ -3,7 +3,17 @@
 #include <string.h>
 #include <errno.h>
 
-#if defined(__unix__)
+#if !defined(ASSUME_UNIX) && !defined(ASSUME_WIN32) && !defined(ASSUME_ANSIC)
+	#if defined(__unix__)
+		#define ASSUME_UNIX
+	#elif defined(_WIN32)
+		#define ASSUME_WIN32
+	#else
+		#define ASSUME_ANSIC
+	#endif
+#endif
+
+#ifdef ASSUME_UNIX
 	#include <unistd.h>
 #else
 	#include "getopt.h"
@@ -15,7 +25,7 @@
 
 #define RENAME_ON_REBOOT 110
 
-#if defined(_WIN32)
+#ifdef ASSUME_WIN32
 	#include <io.h>
 	#include <windows.h>
 	#define TRY_BACKSLASH_AND_SLASH(p) \
@@ -57,7 +67,7 @@
 		return 0;
 	}
 #endif
-#if defined(__unix__)
+#ifdef ASSUME_UNIX
 	#include <libgen.h>
 	int file_exists(const char *dst) {
 		FILE *fp;
@@ -69,7 +79,7 @@
 		return 0;
 	}
 #endif
-#if defined(_WIN32) || defined(__unix__)
+#ifndef ASSUME_ANSIC
 	#include <sys/stat.h>
 	int isdir(const char *path) {
 		struct stat st;
@@ -98,10 +108,10 @@
 int do_move(const char *src, const char *dst, int interactive) {
 	char *built_dst = NULL;
 	int err = 0;
-	#if defined(_WIN32)
+	#ifndef ASSUME_ANSIC
 		int exists = 0;
 	#endif
-	#if defined(_WIN32) || defined(__unix__)
+	#ifndef ASSUME_ANSIC
 		built_dst = build_dst(src, dst);
 		if(!built_dst) {
 			perror("do_move call to build_dst failed");
@@ -114,7 +124,7 @@ int do_move(const char *src, const char *dst, int interactive) {
 	#endif
 	/* If running in interactive mode, prompt for overwrite. */
 	if(interactive > INTERACTIVE_ASSUME_YES) {
-	#if defined(_WIN32) || defined(__unix__)
+	#ifndef ASSUME_ANSIC
 		exists = file_exists(built_dst);
 		if(exists) {
 			int yesno;
@@ -147,7 +157,7 @@ int do_move(const char *src, const char *dst, int interactive) {
 	#endif
 	}
 	/* Try to move */
-	#if defined(_WIN32)
+	#ifdef ASSUME_WIN32
 		if(interactive == INTERACTIVE_ASSUME_YES) {
 			exists = file_exists(built_dst ? built_dst : dst);
 		}
