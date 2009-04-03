@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #if !defined(ASSUME_UNIX) && !defined(ASSUME_WIN32) && !defined(ASSUME_ANSIC)
-	#if defined(__unix__)
+	#if defined(__unix__) || defined(__APPLE__)
 		#define ASSUME_UNIX
 	#elif defined(_WIN32)
 		#define ASSUME_WIN32
