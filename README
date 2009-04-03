@@ -1,0 +1,15 @@
+A POSIXLY-compliant mv command.
+
+This code will compile on any C89 system.
+On such systems, it requires an exact path to the destination, and not just 
+a destination directory.  Also, it will not be able to tell if a destination 
+exists.
+
+On a POSIX system (with the __unix__ macro defined) the above limitations 
+go away.
+
+On a Windows system (WinNT only, Win2K+, tested on WinXP) 
+(with the _WIN32 macro defined) the above limitations go away. 
+Also, if a file is currently open when the rename is attempted, it will be 
+set to complete the move after reboot, a message to this effect will be 
+printed, and the exit code will be 110.
