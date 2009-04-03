@@ -17,6 +17,7 @@
 
 #if defined(_WIN32)
 	#include <io.h>
+	#include <windows.h>
 	#define TRY_BACKSLASH_AND_SLASH(p) \
 	       	name = strrchr((p), '\\'); \
 		if(!name) { \
@@ -43,9 +44,30 @@
 		}
 		return name+1;
 	}
+	int file_exists(const char *dst) {
+		HANDLE fp = CreateFile(dst, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		int err = GetLastError();
+		CloseHandle(fp);
+		if(err == ERROR_SUCCESS) {
+			return 1;
+		}
+		if(err == ERROR_SHARING_VIOLATION) {
+			return 2;
+		}
+		return 0;
+	}
 #endif
 #if defined(__unix__)
 	#include <libgen.h>
+	int file_exists(const char *dst) {
+		FILE *fp;
+		fp = fopen(dst, "rb");
+		if(fp) { /* The file exists */
+			fclose(fp);
+			return 1;
+		}
+		return 0;
+	}
 #endif
 #if defined(_WIN32) || defined(__unix__)
 	#include <sys/stat.h>
@@ -71,20 +93,12 @@
 			return strdup(dst);
 		}
 	}
-	int file_exists(const char *dst) {
-		FILE *fp;
-		fp = fopen(dst, "rb");
-		if(fp) { /* The file exists */
-			fclose(fp);
-			return 1;
-		}
-		return 0;
-	}
 #endif
 
 int do_move(const char *src, const char *dst, int interactive) {
 	char *built_dst = NULL;
 	int err = 0;
+	int exists = 0;
 	#if defined(_WIN32) || defined(__unix__)
 		built_dst = build_dst(src, dst);
 		if(!built_dst) {
@@ -99,16 +113,21 @@ int do_move(const char *src, const char *dst, int interactive) {
 	/* If running in interactive mode, prompt for overwrite. */
 	if(interactive > INTERACTIVE_ASSUME_YES) {
 	#if defined(_WIN32) || defined(__unix__)
-		if(file_exists(built_dst)) {
+		exists = file_exists(built_dst);
+		if(exists) {
 			int yesno;
-			fprintf(stderr, "'%s' already exists. Overwrite? [Yn] ", built_dst);
+			if(exists == 1) {
+				fprintf(stderr, "'%s' already exists. Overwrite? [Yn] ", built_dst);
+			} else if(exists == 2) {
+				fprintf(stderr, "'%s' is in use. Overwrite on reboot? [Yn] ", built_dst);
+			}
 			fflush(stderr);
 			if((yesno = fgetc(stdin)) == EOF) {
 				fputs("Reading from STDIN failed.\n", stderr);
 				return EXIT_FAILURE;
 			}
 			if(yesno == 'n' || yesno == 'N') {
-				return 0;
+				return exists == 2 ? EXIT_FAILURE : 0;
 			}
 		}
 	#else
@@ -127,9 +146,14 @@ int do_move(const char *src, const char *dst, int interactive) {
 	}
 	/* Try to move */
 	#if defined(_WIN32)
-		/* if(interactive > INERACTIVE_ASSUME_YES && dst is in use) prompt for rename-at-reboot return EXIT_FAILURE on no, RENAME_ON_REBOOT on yes. XXX: Not in POSIX */
-		/* if interactive == INTERACTIVE_ASSUME_YES && dst is in use) rename-at reboot. return RENAME_ON_REBOOT. XXX: Not in POSIX */
-		/* TODO */
+		if(interactive == INTERACTIVE_ASSUME_YES) {
+			exists = file_exists(built_dst ? built_dst : dst);
+		}
+		if(exists == 2) { /* rename on reboot */
+			/* TODO */
+		} else { /* just rename */
+			/* TODO */
+		}
 	#else
 		if(built_dst) {
 			err = rename(src, built_dst);
