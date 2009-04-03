@@ -4,7 +4,7 @@
 #include <errno.h>
 
 #if defined(__unix__)
-	#include <unistd.h> /* for getopt TODO: freegetopt */
+	#include <unistd.h>
 #else
 	#include "getopt.h"
 #endif
