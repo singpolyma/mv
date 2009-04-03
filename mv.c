@@ -98,7 +98,9 @@
 int do_move(const char *src, const char *dst, int interactive) {
 	char *built_dst = NULL;
 	int err = 0;
-	int exists = 0;
+	#if defined(_WIN32)
+		int exists = 0;
+	#endif
 	#if defined(_WIN32) || defined(__unix__)
 		built_dst = build_dst(src, dst);
 		if(!built_dst) {
@@ -135,7 +137,7 @@ int do_move(const char *src, const char *dst, int interactive) {
 		char yesno;
 		fprintf(stderr, "Can't tell if '%s' exists. Move anyway? [Yn] ", dst);
 		fflush(stderr);
-		if((yesno = fgets(stdin)) == EOF) {
+		if((yesno = fgetc(stdin)) == EOF) {
 			fputs("Reading from STDIN failed.\n", stderr);
 			return EXIT_FAILURE;
 		}
