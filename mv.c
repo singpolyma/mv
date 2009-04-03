@@ -150,16 +150,15 @@ int do_move(const char *src, const char *dst, int interactive) {
 			exists = file_exists(built_dst ? built_dst : dst);
 		}
 		if(exists == 2) { /* rename on reboot */
-			/* TODO */
+			err = MoveFileEx(src, built_dst ? built_dst : dst, MOVEFILE_DELAY_UNTIL_REBOOT | MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
 		} else { /* just rename */
-			/* TODO */
+			err = MoveFileEx(src, built_dst ? built_dst : dst, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
+		}
+		if(err) {
+			err = GetLastError();
 		}
 	#else
-		if(built_dst) {
-			err = rename(src, built_dst);
-		} else {
-			err = rename(src, dst);
-		}
+		err = rename(src, built_dst ? built_dst : dst);
 		if(err) {
 			err = errno;
 		}
