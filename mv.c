@@ -102,6 +102,7 @@ int do_move(const char *src, const char *dst, int interactive) {
 		if(file_exists(built_dst)) {
 			int yesno;
 			fprintf(stderr, "'%s' already exists. Overwrite? [Yn] ", built_dst);
+			fflush(stderr);
 			if((yesno = fgetc(stdin)) == EOF) {
 				fputs("Reading from STDIN failed.\n", stderr);
 				return EXIT_FAILURE;
@@ -114,6 +115,7 @@ int do_move(const char *src, const char *dst, int interactive) {
 		/* C89 gives us no way to construct the path, so just always prompt. */
 		char yesno;
 		fprintf(stderr, "Can't tell if '%s' exists. Move anyway? [Yn] ", dst);
+		fflush(stderr);
 		if((yesno = fgets(stdin)) == EOF) {
 			fputs("Reading from STDIN failed.\n", stderr);
 			return EXIT_FAILURE;
