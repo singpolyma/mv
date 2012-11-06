@@ -29,7 +29,7 @@
 	#include <io.h>
 	#include <windows.h>
 	#define TRY_BACKSLASH_AND_SLASH(p) \
-	       	name = strrchr((p), '\\'); \
+		name = strrchr((p), '\\'); \
 		if(!name) { \
 			name = strrchr((p), '/'); \
 		} \
